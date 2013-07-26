@@ -56,7 +56,7 @@
         };
 
         // Config
-        fishfork.fetcherURL = 'module/fishfork.php';
+        fishfork.fetcherURL = 'src/fishfork.php';
 
         // Fetch the content of this URL
         function fetch( url ) {

@@ -1,0 +1,21 @@
+﻿<!DOCTYPE HTML> 
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Fishfork Demo</title>
+</head>
+<body>
+	<script src="jquery-2.0.3.js"></script>
+	<script src="../src/fishfork.js"></script>
+
+	Taobao.com popular search:<div id="taobao"></div>
+	<script>
+		fishfork.fetcherURL = location.origin + location.pathname.replace(/\/[^\/]+\/[^\/]*$/,'') + '/src/fishfork.php';
+		console.log( fishfork.fetcherURL );
+		fishfork('http://meiri.taobao.com/category-6093614.htm?spm=a1z10.1.w5002-252501663.5.mcBExU&search=y&catName=PSV%CF%B5%C1%D0', function( html ){
+			console.log(html);
+			$('#taobao-pop-search').html( html );
+		});
+	</script>
+</body>
+</html>

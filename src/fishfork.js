@@ -28,26 +28,26 @@
               , selectorType = $.type( selectors );
 
             // Handle fishfork('http://ooxx.com').done(), fishfork('http://ooxx.com', callback), return ( html[String] );
-            // test case 1: fishfork("http://www.aliexpress.com/").done(function( html ){ console.log(html); })
-            // test case 2: fishfork("http://www.aliexpress.com/", function( html ){ console.log(html); })
+            // - demo case 1: fishfork("http://www.aliexpress.com/").done(function( html ){ console.log(html); })
+            // - demo case 2: fishfork("http://www.aliexpress.com/", function( html ){ console.log(html); })
             if ( arguments.length == 1 || selectorType == 'function' ) {
                 return dfd.resolve( targetURL ).pipe( fetch ).done( selectors ).promise();
             }
 
-            // HTML >> DOM >> sizzleEl, return ( sizzleEl [el|elArray|elMap], htmlContent, targetURL, selectors )
-            // test case 1: fishfork("http://www.aliexpress.com/", "a:eq(0)").done(function( ){ console.log(arguments); })
-            // test case 2: fishfork("http://www.aliexpress.com/", "a:eq(0)", function( ){ console.log(arguments); })
-            // test case 3: fishfork("http://www.aliexpress.com/", ["a:eq(0)", "span:eq(0)"]).done(function( ){ console.log(arguments); })
-            // test case 4: fishfork("http://www.aliexpress.com/", ["a:eq(0)", "span:eq(0)"], function( ){ console.log(arguments); })
-            // test case 5: fishfork("http://www.aliexpress.com/", { a:"a:eq(0)", span:"span:eq(0)" }).done(function( ){ console.log(arguments); })
-            // test case 6: fishfork("http://www.aliexpress.com/", { a:"a:eq(0)", span:"span:eq(0)" }, function( ){ console.log(arguments); })
+            // HTML >> sizzleEl, return ( sizzleEl [el|elArray|elMap], htmlContent, targetURL, selectors )
+            // - demo case 1: fishfork("http://www.aliexpress.com/", "a:eq(0)").done(function( ){ console.log(arguments); })
+            // - demo case 2: fishfork("http://www.aliexpress.com/", "a:eq(0)", function( ){ console.log(arguments); })
+            // - demo case 3: fishfork("http://www.aliexpress.com/", ["a:eq(0)", "span:eq(0)"]).done(function( ){ console.log(arguments); })
+            // - demo case 4: fishfork("http://www.aliexpress.com/", ["a:eq(0)", "span:eq(0)"], function( ){ console.log(arguments); })
+            // - demo case 5: fishfork("http://www.aliexpress.com/", { a:"a:eq(0)", span:"span:eq(0)" }).done(function( ){ console.log(arguments); })
+            // - demo case 6: fishfork("http://www.aliexpress.com/", { a:"a:eq(0)", span:"span:eq(0)" }, function( ){ console.log(arguments); })
             fetch( targetURL ).done(function( html ){
                 dfd.resolve(
-                    fishfork[ {
-                        'string' : 'queryNode',
-                        'array'  : 'queryNodesArray',
-                        'object' : 'queryNodesMap'
-                    } [ selectorType ] ] ( parseDOM( html ), selectors ),
+                    {
+                        'string' : queryNode,
+                        'array'  : queryNodesArray,
+                        'object' : queryNodesMap
+                    } [ selectorType ] ( parseDOM( html ), selectors ),
 
                     html, targetURL, selectors
                 );
@@ -56,25 +56,33 @@
         };
 
         // Config
-        fishfork.fetcherURL = 'src/fishfork.php';
+        fishfork.fetcherURL = 'module/fishfork.php';
 
         // Fetch the content of this URL
         function fetch( url ) {
-            return $.get( fishfork.fetcherURL + '?t=' + new Date().getTime() + '&url=' + encodeURIComponent( url ) );
+            return $.get(
+                fishfork.fetcherURL + 
+                '?t=' + new Date().getTime() + 
+                '&url=' + encodeURIComponent( url ) + 
+                '&ua=' + encodeURIComponent( navigator.userAgent )
+            );
         }
-        fishfork.fetch = fetch;
 
         // Trans HTML content string to DOM element
         function parseDOM( html ) {
-            return $('<div>').append( html.replace(/<script(\s|>)[\S\s]+?<\/script>/gi,'') );
+            return $('<div>').append(
+                html
+                // Remove <scripts> to prevent it's execution.
+                .replace(/<script(\s|>)[\S\s]+?<\/script>/gi,'')
+                // Replace "src" attribute of <img> with "fishfork-src", in order to prevent image loading.
+                .replace(/(<img[\s\r\n>]?[\s\S]*?[\s\r\n])(src="[^"]*?"(?:[\s\r\n>]|[\s\S]*?>))/gi,'\1fishfork-\2')
+            );
         }
-        fishfork.parseDOM = parseDOM;
 
         // Query single selector
         function queryNode( el, selector ) {
             return el.find( selector );
         }
-        fishfork.queryNode = queryNode;
 
         // Query an Array of selectors
         function queryNodesArray( el, selectorsArr ) {
@@ -84,7 +92,6 @@
             });
             return resArray;
         }
-        fishfork.queryNodesArray = queryNodesArray;
 
         // Query a Map of selectors
         function queryNodesMap( el, selectorsMap ) {
@@ -94,7 +101,6 @@
             });
             return resMap;
         }
-        fishfork.queryNodesMap = queryNodesMap;
 
         return fishfork;
     }
